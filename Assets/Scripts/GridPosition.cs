@@ -8,4 +8,9 @@ public struct GridPosition
         this.x = x;
         this.y = y;
     }
+
+    public bool Equals(GridPosition other)
+    {
+        return x == other.x && y == other.y;
+    }
 }

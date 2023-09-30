@@ -9,6 +9,25 @@ public class Player : MonoBehaviour
 
     private GridPosition? selectedMove;
 
+    private bool isEliminated;
+
+    private float speed;
+
+    private float gravity = 2f;
+
+    private void Update()
+    {
+        if (isEliminated)
+        {
+            speed += gravity * Time.deltaTime;
+            transform.position += Vector3.down * speed;
+            if (transform.position.y < -100f)
+            {
+                Destroy(gameObject);
+            }
+        }
+    }
+
     public float GetOffsetY()
     {
         return offsetY;
@@ -32,5 +51,10 @@ public class Player : MonoBehaviour
     public void SetSelectedMove(GridPosition? selectedMove)
     {
         this.selectedMove = selectedMove;
+    }
+
+    public void SetIsEliminated()
+    {
+        isEliminated = true;
     }
 }

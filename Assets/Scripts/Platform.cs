@@ -92,22 +92,48 @@ public class Platform : MonoBehaviour
         return bots.ToList();
     }
 
+    public void EliminatePlayer(Player player)
+    {
+        player.SetIsEliminated();
+        if (bots.Contains(player))
+        {
+            bots.Remove(player);
+        }
+    }
+
+    public bool ValidatePlayerPosition(Player player)
+    {
+        return IsTileAtGridPosition(player.GetGridPosition(), false);
+    }
+
     public List<GridPosition> GetPlayerMoves(Player player, bool includeUnstable = false)
     {
         List<GridPosition> playerMoves = new List<GridPosition>();
         GridPosition position = player.GetGridPosition();
 
         GridPosition positionN = new GridPosition(position.x, position.y + 1);
-        if (IsTileAtGridPosition(positionN, includeUnstable)) playerMoves.Add(positionN);
+        if (IsTileAtGridPosition(positionN, includeUnstable) && !IsPlayerAtGridPosition(positionN))
+        {
+            playerMoves.Add(positionN);
+        }
 
         GridPosition positionE = new GridPosition(position.x + 1, position.y);
-        if (IsTileAtGridPosition(positionE, includeUnstable)) playerMoves.Add(positionE);
+        if (IsTileAtGridPosition(positionE, includeUnstable) && !IsPlayerAtGridPosition(positionE))
+        {
+            playerMoves.Add(positionE);
+        }
 
         GridPosition positionS = new GridPosition(position.x, position.y - 1);
-        if (IsTileAtGridPosition(positionS, includeUnstable)) playerMoves.Add(positionS);
+        if (IsTileAtGridPosition(positionS, includeUnstable) && !IsPlayerAtGridPosition(positionS))
+        {
+            playerMoves.Add(positionS);
+        }
 
         GridPosition positionW = new GridPosition(position.x - 1, position.y);
-        if (IsTileAtGridPosition(positionW, includeUnstable)) playerMoves.Add(positionW);
+        if (IsTileAtGridPosition(positionW, includeUnstable) && !IsPlayerAtGridPosition(positionW))
+        {
+            playerMoves.Add(positionW);
+        }
 
         return playerMoves;
     }
@@ -138,7 +164,7 @@ public class Platform : MonoBehaviour
     {
         foreach (PlatformTile tile in unstablePlatformTiles)
         {
-            if (gridPosition.x == tile.GetGridPosition().x && gridPosition.y == tile.GetGridPosition().y)
+            if (gridPosition.Equals(tile.GetGridPosition()))
             {
                 return true;
             }
@@ -152,7 +178,10 @@ public class Platform : MonoBehaviour
         foreach (PlatformTile tile in unstablePlatformTiles)
         {
             // TODO: PlatformTile function to destroy and spawn particles
+            Destroy(tile.gameObject);
         }
+
+        unstablePlatformTiles.Clear();
     }
 
     private void RandomizeRotation(Transform transform)
@@ -188,7 +217,7 @@ public class Platform : MonoBehaviour
     {
         foreach (PlatformTile tile in stablePlatformTiles)
         {
-            if (gridPosition.x == tile.GetGridPosition().x && gridPosition.y == tile.GetGridPosition().y)
+            if (gridPosition.Equals(tile.GetGridPosition()))
             {
                 return true;
             }
@@ -201,7 +230,25 @@ public class Platform : MonoBehaviour
 
         foreach (PlatformTile tile in unstablePlatformTiles)
         {
-            if (gridPosition.x == tile.GetGridPosition().x && gridPosition.y == tile.GetGridPosition().y)
+            if (gridPosition.Equals(tile.GetGridPosition()))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsPlayerAtGridPosition(GridPosition gridPosition)
+    {
+        if (gridPosition.Equals(player.GetGridPosition()))
+        {
+            return true;
+        }
+
+        foreach (Player bot in bots)
+        {
+            if (gridPosition.Equals(bot.GetGridPosition()))
             {
                 return true;
             }
