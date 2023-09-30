@@ -11,6 +11,14 @@ public class GameSystem : MonoBehaviour
     [SerializeField]
     private int unstableTilesPerTurn = 2;
 
+    [SerializeField]
+    private SelectionHint selectionHintPrefab;
+
+    [SerializeField]
+    private LayerMask selectionLayerMask;
+
+    private HashSet<SelectionHint> selectionHints;
+
     private GameState gameState;
 
     private void Awake()
@@ -21,11 +29,46 @@ public class GameSystem : MonoBehaviour
         }
         Instance = this;
         gameState = GameState.TurnInit;
+        selectionHints = new HashSet<SelectionHint>();
     }
 
     private void Start()
     {
         AdvanceState();
+    }
+
+    private void Update()
+    {
+        if (gameState == GameState.MoveSelection)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                RaycastHit hit;
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out hit, selectionLayerMask))
+                {
+                    SelectionHint selectionHint = hit.transform.GetComponent<SelectionHint>();
+                    foreach (SelectionHint otherSelectionHint in selectionHints)
+                    {
+                        if (otherSelectionHint != selectionHint)
+                        {
+                            otherSelectionHint.SetIsSelected(false);
+                        }
+                    }
+
+                    if (selectionHint.GetIsSelected())
+                    {
+                        selectionHint.SetIsSelected(false);
+                        platform.GetPlayer().SetSelectedMove(null);
+                    }
+                    else
+                    {
+                        selectionHint.SetIsSelected(true);
+                        platform.GetPlayer().SetSelectedMove(selectionHint.GetGridPosition());
+                    }
+                }
+            }
+        }
     }
 
     public void AdvanceState()
@@ -42,7 +85,18 @@ public class GameSystem : MonoBehaviour
     {
         platform.MarkUnstableTiles(unstableTilesPerTurn);
         CalculateBotMoves();
+        ShowPlayerMoveOptions();
         gameState = GameState.MoveSelection;
+    }
+
+    private void ClearSelectionHints()
+    {
+        foreach (SelectionHint selectionHint in selectionHints)
+        {
+            Destroy(selectionHint.gameObject);
+        }
+
+        selectionHints.Clear();
     }
 
     private void CalculateBotMoves()
@@ -67,6 +121,21 @@ public class GameSystem : MonoBehaviour
                 int moveIndex = Mathf.FloorToInt(Random.value * moves.Count);
                 bot.SetSelectedMove(moves[moveIndex]);
             }
+        }
+    }
+
+    private void ShowPlayerMoveOptions()
+    {
+        ClearSelectionHints();
+        Player player = platform.GetPlayer();
+        List<GridPosition> moves = platform.GetPlayerMoves(player, true);
+        Debug.Log(moves.Count);
+        foreach (GridPosition move in moves)
+        {
+            Vector3 moveWorldPosition = platform.GetWorldPositionFromGridPosition(move);
+            SelectionHint selectionHint = Instantiate(selectionHintPrefab, moveWorldPosition, Quaternion.identity);
+            selectionHint.SetGridPosition(move);
+            selectionHints.Add(selectionHint);
         }
     }
 }

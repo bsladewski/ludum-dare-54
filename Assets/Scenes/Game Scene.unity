@@ -567,6 +567,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   platform: {fileID: 1712838921}
   unstableTilesPerTurn: 2
+  selectionHintPrefab: {fileID: -2630518200436458914, guid: 55b8dd92dcdf2474fa7f5cd8045cf3c0, type: 3}
+  selectionLayerMask:
+    serializedVersion: 2
+    m_Bits: 8
 --- !u!4 &428652351
 Transform:
   m_ObjectHideFlags: 0

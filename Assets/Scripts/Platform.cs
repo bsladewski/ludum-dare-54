@@ -42,8 +42,10 @@ public class Platform : MonoBehaviour
         {
             for (int y = 0; y < PLATFORM_HEIGHT; y++)
             {
-                Vector3 worldPosition = GetWorldPositionFromGridPosition(new GridPosition(x, y));
+                GridPosition platformTileGridPosition = new GridPosition(x, y);
+                Vector3 worldPosition = GetWorldPositionFromGridPosition(platformTileGridPosition);
                 PlatformTile platformTile = Instantiate(platformTilePrefab, worldPosition, Quaternion.identity);
+                platformTile.SetGridPosition(platformTileGridPosition);
                 RandomizeRotation(platformTile.transform);
                 platformTile.transform.SetParent(transform);
                 platformTiles[x, y] = platformTile;
@@ -190,6 +192,11 @@ public class Platform : MonoBehaviour
             {
                 return true;
             }
+        }
+
+        if (!includeUnstable)
+        {
+            return false;
         }
 
         foreach (PlatformTile tile in unstablePlatformTiles)

@@ -24,6 +24,11 @@ public class Player : MonoBehaviour
         this.gridPosition = gridPosition;
     }
 
+    public GridPosition? GetSelectedMove()
+    {
+        return selectedMove;
+    }
+
     public void SetSelectedMove(GridPosition? selectedMove)
     {
         this.selectedMove = selectedMove;
