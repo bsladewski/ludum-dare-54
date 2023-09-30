@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Platform : MonoBehaviour
@@ -8,7 +9,7 @@ public class Platform : MonoBehaviour
     public static readonly int PLATFORM_HEIGHT = 7;
 
     [SerializeField]
-    private PlatformChunk platformChunkPrefab;
+    private PlatformTile platformTilePrefab;
 
     [SerializeField]
     private Player playerPrefab;
@@ -16,26 +17,24 @@ public class Platform : MonoBehaviour
     [SerializeField]
     private Player botPrefab;
 
-    private PlatformChunk[,] platformChunks;
-
-    private struct GridPosition
-    {
-        public int x;
-        public int y;
-
-        public GridPosition(int x, int y)
-        {
-            this.x = x;
-            this.y = y;
-        }
-    }
+    private PlatformTile[,] platformTiles;
 
     private List<GridPosition> playerSpawnPositions;
 
+    private HashSet<PlatformTile> stablePlatformTiles;
+
+    private HashSet<PlatformTile> unstablePlatformTiles;
+
+    private Player player;
+
+    private HashSet<Player> bots;
+
     void Awake()
     {
-        platformChunks = new PlatformChunk[PLATFORM_WIDTH, PLATFORM_HEIGHT];
+        platformTiles = new PlatformTile[PLATFORM_WIDTH, PLATFORM_HEIGHT];
         playerSpawnPositions = new List<GridPosition>();
+        stablePlatformTiles = new HashSet<PlatformTile>();
+        unstablePlatformTiles = new HashSet<PlatformTile>();
 
         // generate platform
         for (int x = 0; x < PLATFORM_WIDTH; x++)
@@ -43,10 +42,11 @@ public class Platform : MonoBehaviour
             for (int y = 0; y < PLATFORM_HEIGHT; y++)
             {
                 Vector3 worldPosition = GetWorldPositionFromGridPosition(new GridPosition(x, y));
-                PlatformChunk platformChunk = Instantiate(platformChunkPrefab, worldPosition, Quaternion.identity);
-                RandomizeRotation(platformChunk.transform);
-                platformChunk.transform.SetParent(transform);
-                platformChunks[x, y] = platformChunk;
+                PlatformTile platformTile = Instantiate(platformTilePrefab, worldPosition, Quaternion.identity);
+                RandomizeRotation(platformTile.transform);
+                platformTile.transform.SetParent(transform);
+                platformTiles[x, y] = platformTile;
+                stablePlatformTiles.Add(platformTile);
 
                 // mark possible player spawn positions
                 if (
@@ -64,6 +64,8 @@ public class Platform : MonoBehaviour
         Vector3 playerWorldPosition = GetWorldPositionFromGridPosition(playerSpawnPosition);
         Player player = Instantiate(playerPrefab, playerWorldPosition, Quaternion.identity);
         player.transform.position += Vector3.up * player.GetOffsetY();
+        player.SetGridPosition(playerSpawnPosition);
+        this.player = player;
 
         // spawn bots
         while (playerSpawnPositions.Count > 0)
@@ -72,12 +74,59 @@ public class Platform : MonoBehaviour
             Vector3 botWorldPosition = GetWorldPositionFromGridPosition(botSpawnPosition);
             Player bot = Instantiate(botPrefab, botWorldPosition, Quaternion.identity);
             bot.transform.position += Vector3.up * bot.GetOffsetY();
+            bot.SetGridPosition(botSpawnPosition);
+            bots.Add(bot);
         }
     }
 
-    private Vector3 GetWorldPositionFromGridPosition(GridPosition gridPosition)
+    public List<GridPosition> GetPlayerMoves()
+    {
+        List<GridPosition> playerMoves = new List<GridPosition>();
+        GridPosition position = player.GetGridPosition();
+
+        GridPosition positionN = new GridPosition(position.x, position.y + 1);
+        if (IsTileAtGridPosition(positionN)) playerMoves.Add(positionN);
+
+        GridPosition positionE = new GridPosition(position.x + 1, position.y);
+        if (IsTileAtGridPosition(positionE)) playerMoves.Add(positionE);
+
+        GridPosition positionS = new GridPosition(position.x, position.y - 1);
+        if (IsTileAtGridPosition(positionS)) playerMoves.Add(positionS);
+
+        GridPosition positionW = new GridPosition(position.x - 1, position.y);
+        if (IsTileAtGridPosition(positionW)) playerMoves.Add(positionW);
+
+        return playerMoves;
+    }
+
+    public Vector3 GetWorldPositionFromGridPosition(GridPosition gridPosition)
     {
         return new Vector3(gridPosition.x - PLATFORM_WIDTH / 2f, 0f, gridPosition.y - PLATFORM_HEIGHT / 2f);
+    }
+
+    public void MarkUnstableTiles(int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            if (stablePlatformTiles.Count <= 1)
+            {
+                break;
+            }
+
+            int tileIndex = Mathf.FloorToInt(Random.value * stablePlatformTiles.Count);
+            PlatformTile tile = stablePlatformTiles.ElementAt(tileIndex);
+            unstablePlatformTiles.Add(tile);
+            stablePlatformTiles.Remove(tile);
+            tile.SetIsShaking(true);
+        }
+    }
+
+    public void DestroyUnstableTiles()
+    {
+        foreach (PlatformTile tile in unstablePlatformTiles)
+        {
+            // TODO: PlatformTile function to destroy and spawn particles
+        }
     }
 
     private void RandomizeRotation(Transform transform)
@@ -107,5 +156,26 @@ public class Platform : MonoBehaviour
         GridPosition spawnPosition = playerSpawnPositions[spawnPositionIndex];
         playerSpawnPositions.RemoveAt(spawnPositionIndex);
         return spawnPosition;
+    }
+
+    private bool IsTileAtGridPosition(GridPosition gridPosition)
+    {
+        foreach (PlatformTile tile in stablePlatformTiles)
+        {
+            if (gridPosition.x == tile.GetGridPosition().x && gridPosition.y == tile.GetGridPosition().y)
+            {
+                return true;
+            }
+        }
+
+        foreach (PlatformTile tile in unstablePlatformTiles)
+        {
+            if (gridPosition.x == tile.GetGridPosition().x && gridPosition.y == tile.GetGridPosition().y)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
