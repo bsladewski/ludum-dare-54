@@ -35,6 +35,7 @@ public class Platform : MonoBehaviour
         playerSpawnPositions = new List<GridPosition>();
         stablePlatformTiles = new HashSet<PlatformTile>();
         unstablePlatformTiles = new HashSet<PlatformTile>();
+        bots = new HashSet<Player>();
 
         // generate platform
         for (int x = 0; x < PLATFORM_WIDTH; x++)
@@ -79,22 +80,32 @@ public class Platform : MonoBehaviour
         }
     }
 
-    public List<GridPosition> GetPlayerMoves()
+    public Player GetPlayer()
+    {
+        return player;
+    }
+
+    public List<Player> GetBots()
+    {
+        return bots.ToList();
+    }
+
+    public List<GridPosition> GetPlayerMoves(Player player, bool includeUnstable = false)
     {
         List<GridPosition> playerMoves = new List<GridPosition>();
         GridPosition position = player.GetGridPosition();
 
         GridPosition positionN = new GridPosition(position.x, position.y + 1);
-        if (IsTileAtGridPosition(positionN)) playerMoves.Add(positionN);
+        if (IsTileAtGridPosition(positionN, includeUnstable)) playerMoves.Add(positionN);
 
         GridPosition positionE = new GridPosition(position.x + 1, position.y);
-        if (IsTileAtGridPosition(positionE)) playerMoves.Add(positionE);
+        if (IsTileAtGridPosition(positionE, includeUnstable)) playerMoves.Add(positionE);
 
         GridPosition positionS = new GridPosition(position.x, position.y - 1);
-        if (IsTileAtGridPosition(positionS)) playerMoves.Add(positionS);
+        if (IsTileAtGridPosition(positionS, includeUnstable)) playerMoves.Add(positionS);
 
         GridPosition positionW = new GridPosition(position.x - 1, position.y);
-        if (IsTileAtGridPosition(positionW)) playerMoves.Add(positionW);
+        if (IsTileAtGridPosition(positionW, includeUnstable)) playerMoves.Add(positionW);
 
         return playerMoves;
     }
@@ -119,6 +130,19 @@ public class Platform : MonoBehaviour
             stablePlatformTiles.Remove(tile);
             tile.SetIsShaking(true);
         }
+    }
+
+    public bool IsTileUnstable(GridPosition gridPosition)
+    {
+        foreach (PlatformTile tile in unstablePlatformTiles)
+        {
+            if (gridPosition.x == tile.GetGridPosition().x && gridPosition.y == tile.GetGridPosition().y)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void DestroyUnstableTiles()
@@ -158,7 +182,7 @@ public class Platform : MonoBehaviour
         return spawnPosition;
     }
 
-    private bool IsTileAtGridPosition(GridPosition gridPosition)
+    private bool IsTileAtGridPosition(GridPosition gridPosition, bool includeUnstable)
     {
         foreach (PlatformTile tile in stablePlatformTiles)
         {

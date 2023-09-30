@@ -7,6 +7,8 @@ public class Player : MonoBehaviour
 
     private GridPosition gridPosition;
 
+    private GridPosition? selectedMove;
+
     public float GetOffsetY()
     {
         return offsetY;
@@ -20,5 +22,10 @@ public class Player : MonoBehaviour
     public void SetGridPosition(GridPosition gridPosition)
     {
         this.gridPosition = gridPosition;
+    }
+
+    public void SetSelectedMove(GridPosition? selectedMove)
+    {
+        this.selectedMove = selectedMove;
     }
 }
