@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,6 +17,8 @@ public class GameSystem : MonoBehaviour
 
     [SerializeField]
     private LayerMask selectionLayerMask;
+
+    public event EventHandler<GameState> OnGameStateChanged;
 
     private HashSet<SelectionHint> selectionHints;
 
@@ -78,7 +81,16 @@ public class GameSystem : MonoBehaviour
             case GameState.TurnInit:
                 HandleTurnInit();
                 break;
+            case GameState.MoveSelection:
+                HandleMoveSelection();
+                break;
         }
+    }
+
+    private void SetGameState(GameState gameState)
+    {
+        this.gameState = gameState;
+        OnGameStateChanged?.Invoke(this, gameState);
     }
 
     private void HandleTurnInit()
@@ -86,7 +98,13 @@ public class GameSystem : MonoBehaviour
         platform.MarkUnstableTiles(unstableTilesPerTurn);
         CalculateBotMoves();
         ShowPlayerMoveOptions();
-        gameState = GameState.MoveSelection;
+        SetGameState(GameState.MoveSelection);
+    }
+
+    private void HandleMoveSelection()
+    {
+        ClearSelectionHints();
+        SetGameState(GameState.MoveExecution);
     }
 
     private void ClearSelectionHints()
@@ -118,7 +136,7 @@ public class GameSystem : MonoBehaviour
             }
             else
             {
-                int moveIndex = Mathf.FloorToInt(Random.value * moves.Count);
+                int moveIndex = Mathf.FloorToInt(UnityEngine.Random.value * moves.Count);
                 bot.SetSelectedMove(moves[moveIndex]);
             }
         }
