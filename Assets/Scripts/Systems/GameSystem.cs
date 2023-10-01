@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GameSystem : MonoBehaviour
@@ -336,6 +337,14 @@ public class GameSystem : MonoBehaviour
         {
             collision.player.SetGridPosition(collision.gridPosition);
             collision.player.SetSelectedMove(collision.selectedMove);
+        }
+
+        foreach (Player player in players)
+        {
+            if (!collisionsToResolve.Any(collision => collision.player == player))
+            {
+                UpdatePlayerPosition(player);
+            }
         }
 
         if (collisionsToResolve.Count > 0)
