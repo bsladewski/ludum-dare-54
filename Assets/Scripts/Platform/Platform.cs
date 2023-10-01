@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Platform : MonoBehaviour
@@ -132,15 +134,24 @@ public class Platform : MonoBehaviour
 
     public void MarkUnstableTiles(int count)
     {
-        for (int i = 0; i < count; i++)
+        HashSet<PlatformTile> checkedTiles = new HashSet<PlatformTile>();
+        while (unstablePlatformTiles.Count < count && stablePlatformTiles.Count > 1)
         {
-            if (stablePlatformTiles.Count <= 1)
+            HashSet<PlatformTile> candidateTiles = new HashSet<PlatformTile>();
+            candidateTiles.UnionWith(stablePlatformTiles);
+            candidateTiles.ExceptWith(checkedTiles);
+
+            int tileIndex = Mathf.FloorToInt(Random.value * candidateTiles.Count);
+            PlatformTile tile = candidateTiles.ElementAt(tileIndex);
+            checkedTiles.Add(tile);
+            if (candidateTiles.Count - unstablePlatformTiles.Count > count)
             {
-                break;
+                if (CheckCreatesIsland(tile.GetGridPosition()))
+                {
+                    continue;
+                }
             }
 
-            int tileIndex = Mathf.FloorToInt(Random.value * stablePlatformTiles.Count);
-            PlatformTile tile = stablePlatformTiles.ElementAt(tileIndex);
             unstablePlatformTiles.Add(tile);
             stablePlatformTiles.Remove(tile);
             tile.SetIsShaking(true);
@@ -252,5 +263,35 @@ public class Platform : MonoBehaviour
         }
 
         return false;
+    }
+
+    private bool CheckCreatesIsland(GridPosition gridPosition)
+    {
+        List<GridPosition> neighbors = GetNeighbors(gridPosition);
+        neighbors = neighbors.Where(neighbor => IsTileAtGridPosition(neighbor, false)).ToList();
+        if (neighbors.Count == 0)
+        {
+            return false;
+        }
+
+        HashSet<GridPosition> visited = new HashSet<GridPosition>() { gridPosition };
+        AddAllConnectedTiles(neighbors[0], visited);
+        return neighbors.Any(neighbor => !visited.Contains(neighbor));
+    }
+
+    private void AddAllConnectedTiles(GridPosition gridPosition, HashSet<GridPosition> visited)
+    {
+        List<GridPosition> neighbors = GetNeighbors(gridPosition);
+        neighbors = neighbors.Where(neighbor => !visited.Contains(neighbor) && IsTileAtGridPosition(neighbor, false)).ToList();
+        foreach (GridPosition neighbor in neighbors)
+        {
+            if (visited.Contains(neighbor))
+            {
+                continue;
+            }
+
+            visited.Add(neighbor);
+            AddAllConnectedTiles(neighbor, visited);
+        }
     }
 }
