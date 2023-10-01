@@ -12,6 +12,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Bot
       objectReference: {fileID: 0}
+    - target: {fileID: 7305108368074429448, guid: 8dadb6c0618e28f41b4a0b08ca5f030c, type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 7b2cc8687266b104aa4b4a1e5f29eea8, type: 2}
     - target: {fileID: 8344587902728227784, guid: 8dadb6c0618e28f41b4a0b08ca5f030c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
