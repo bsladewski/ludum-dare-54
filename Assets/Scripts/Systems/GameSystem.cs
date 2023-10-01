@@ -234,12 +234,12 @@ public class GameSystem : MonoBehaviour
         List<Player> bots = platform.GetBots();
         foreach (Player bot in bots)
         {
-            List<GridPosition> moves = platform.GetPlayerMoves(bot, false, false);
+            List<GridPosition> moves = platform.GetPlayerMoves(bot, false);
             if (platform.IsTileUnstable(bot.GetGridPosition()) && (moves == null || moves.Count == 0))
             {
                 // if the bot is on an unstable tile they should always move, even onto another
                 // unstable tile, for the drama
-                moves = platform.GetPlayerMoves(bot, true, false);
+                moves = platform.GetPlayerMoves(bot, true);
             }
 
             if (moves == null || moves.Count == 0)
@@ -258,7 +258,7 @@ public class GameSystem : MonoBehaviour
     {
         ClearSelectionHints();
         Player player = platform.GetPlayer();
-        List<GridPosition> moves = platform.GetPlayerMoves(player, true, true);
+        List<GridPosition> moves = platform.GetPlayerMoves(player, true);
         foreach (GridPosition move in moves)
         {
             Vector3 moveWorldPosition = platform.GetWorldPositionFromGridPosition(move);

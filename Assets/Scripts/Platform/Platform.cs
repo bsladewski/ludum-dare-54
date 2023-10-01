@@ -111,14 +111,14 @@ public class Platform : MonoBehaviour
         return IsTileAtGridPosition(player.GetGridPosition(), false);
     }
 
-    public List<GridPosition> GetPlayerMoves(Player player, bool includeUnstable, bool includesOccupied)
+    public List<GridPosition> GetPlayerMoves(Player player, bool includeUnstable)
     {
         List<GridPosition> playerMoves = new List<GridPosition>();
         List<GridPosition> neighbors = GetNeighbors(player.GetGridPosition());
 
         foreach (GridPosition gridPosition in neighbors)
         {
-            if (IsTileAtGridPosition(gridPosition, includeUnstable) && (includesOccupied || !IsPlayerAtGridPosition(gridPosition)))
+            if (IsTileAtGridPosition(gridPosition, includeUnstable))
             {
                 playerMoves.Add(gridPosition);
             }
@@ -239,24 +239,6 @@ public class Platform : MonoBehaviour
         foreach (PlatformTile tile in unstablePlatformTiles)
         {
             if (gridPosition.Equals(tile.GetGridPosition()))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private bool IsPlayerAtGridPosition(GridPosition gridPosition)
-    {
-        if (gridPosition.Equals(player.GetGridPosition()))
-        {
-            return true;
-        }
-
-        foreach (Player bot in bots)
-        {
-            if (gridPosition.Equals(bot.GetGridPosition()))
             {
                 return true;
             }
