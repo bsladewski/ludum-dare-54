@@ -212,6 +212,7 @@ public class GameSystem : MonoBehaviour
             Vector3 targetPosition = platform.GetWorldPositionFromGridPosition(player.GetSelectedMove().Value);
             targetPosition += Vector3.up * player.GetOffsetY();
             player.transform.LookAt(targetPosition);
+            player.PlayLungeAnimation();
         }
 
         SetGameState(GameState.MoveExecution);

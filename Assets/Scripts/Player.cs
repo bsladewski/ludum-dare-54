@@ -66,4 +66,9 @@ public class Player : MonoBehaviour
     {
         animator.SetTrigger("Hit");
     }
+
+    public void PlayLungeAnimation()
+    {
+        animator.SetTrigger("Lunge");
+    }
 }
