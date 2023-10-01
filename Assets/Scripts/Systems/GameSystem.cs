@@ -27,6 +27,12 @@ public class GameSystem : MonoBehaviour
 
     public event EventHandler<GameState> OnGameStateChanged;
 
+    public event EventHandler<EventArgs> OnPlayerCollision;
+
+    public event EventHandler<EventArgs> OnPlayerEliminated;
+
+    public event EventHandler<EventArgs> OnTileDestroyed;
+
     private HashSet<SelectionHint> selectionHints;
 
     private GameState gameState;
@@ -331,6 +337,11 @@ public class GameSystem : MonoBehaviour
             collision.player.SetGridPosition(collision.gridPosition);
             collision.player.SetSelectedMove(collision.selectedMove);
         }
+
+        if (collisionsToResolve.Count > 0)
+        {
+            OnPlayerCollision?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private void UpdatePlayerPosition(Player player)
@@ -348,8 +359,11 @@ public class GameSystem : MonoBehaviour
     private void EndTurn()
     {
         bool playerEliminated = false;
+        bool botEliminated = false;
 
         platform.DestroyUnstableTiles();
+        OnTileDestroyed?.Invoke(this, EventArgs.Empty);
+
         Player player = platform.GetPlayer();
         if (!platform.ValidatePlayerPosition(player))
         {
@@ -362,7 +376,13 @@ public class GameSystem : MonoBehaviour
             if (!platform.ValidatePlayerPosition(bot))
             {
                 platform.EliminatePlayer(bot);
+                botEliminated = true;
             }
+        }
+
+        if (playerEliminated || botEliminated)
+        {
+            OnPlayerEliminated?.Invoke(this, EventArgs.Empty);
         }
 
         if (playerEliminated || platform.GetBots().Count == 0)
