@@ -55,6 +55,8 @@ public class GameSystem : MonoBehaviour
 
     private bool gameOver;
 
+    private int turnCounter;
+
     private void Awake()
     {
         if (Instance != null)
@@ -179,6 +181,7 @@ public class GameSystem : MonoBehaviour
 
     private void HandleTurnInitEnd()
     {
+        turnCounter++;
         platform.MarkUnstableTiles(unstableTilesPerTurn);
         CalculateBotMoves();
         ShowPlayerMoveOptions();
@@ -367,6 +370,28 @@ public class GameSystem : MonoBehaviour
             if (!playerEliminated)
             {
                 gameOverMenu.SetTitleText("You Won!");
+                int highscore = PlayerPrefs.GetInt("highscore");
+
+                string flavorText = string.Format("You won in {0} turns!", turnCounter);
+                if (turnCounter > highscore)
+                {
+                    PlayerPrefs.SetInt("highscore", turnCounter);
+                    PlayerPrefs.Save();
+                    flavorText += " This is your new record!";
+                }
+                else
+                {
+                    flavorText += string.Format(" Your best time is {0} turns!", highscore);
+                }
+
+                gameOverMenu.SetFlavorText(flavorText);
+            }
+            else
+            {
+                string flavorText = string.Format("You made it {0} turns!", turnCounter);
+                flavorText += " Give it another try!";
+
+                gameOverMenu.SetFlavorText(flavorText);
             }
             StartCoroutine(ShowGameOverMenu(2));
             gameOver = true;
