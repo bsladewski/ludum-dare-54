@@ -330,21 +330,25 @@ public class GameSystem : MonoBehaviour
                 {
                     collisionsToResolve.Add(new Collision(p1, p1Pos, new GridPosition(p1Pos.x + 1, p1Pos.y)));
                     used.Add(p2);
+                    break;
                 }
                 else if (p2Pos.x < p2PrevPos.x) // S
                 {
                     collisionsToResolve.Add(new Collision(p1, p1Pos, new GridPosition(p1Pos.x - 1, p1Pos.y)));
                     used.Add(p2);
+                    break;
                 }
                 else if (p2Pos.y > p2PrevPos.y) // E
                 {
                     collisionsToResolve.Add(new Collision(p1, p1Pos, new GridPosition(p1Pos.x, p1Pos.y + 1)));
                     used.Add(p2);
+                    break;
                 }
                 else if (p2Pos.y < p2PrevPos.y) // W
                 {
                     collisionsToResolve.Add(new Collision(p1, p1Pos, new GridPosition(p1Pos.x, p1Pos.y - 1)));
                     used.Add(p2);
+                    break;
                 }
             }
         }
