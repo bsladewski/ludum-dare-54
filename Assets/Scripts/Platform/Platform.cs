@@ -73,6 +73,7 @@ public class Platform : MonoBehaviour
         Player player = Instantiate(playerPrefab, playerWorldPosition, Quaternion.identity);
         player.transform.position += Vector3.up * player.GetOffsetY();
         player.SetGridPosition(playerSpawnPosition);
+        SetPlayerInitialRotation(player);
         this.player = player;
 
         // spawn bots
@@ -83,6 +84,7 @@ public class Platform : MonoBehaviour
             Player bot = Instantiate(botPrefab, botWorldPosition, Quaternion.identity);
             bot.transform.position += Vector3.up * bot.GetOffsetY();
             bot.SetGridPosition(botSpawnPosition);
+            SetPlayerInitialRotation(bot);
             bots.Add(bot);
         }
     }
@@ -209,6 +211,32 @@ public class Platform : MonoBehaviour
         GridPosition spawnPosition = playerSpawnPositions[spawnPositionIndex];
         playerSpawnPositions.RemoveAt(spawnPositionIndex);
         return spawnPosition;
+    }
+
+    private void SetPlayerInitialRotation(Player player)
+    {
+        if (player.GetGridPosition().y == PLATFORM_HEIGHT - 1)
+        {
+            player.transform.Rotate(new Vector3(0, 180, 0));
+            return;
+        }
+
+        if (player.GetGridPosition().y == 0)
+        {
+            return;
+        }
+
+        if (player.GetGridPosition().x == 0)
+        {
+            player.transform.Rotate(new Vector3(0, 90, 0));
+            return;
+        }
+
+        if (player.GetGridPosition().x == PLATFORM_WIDTH - 1)
+        {
+            player.transform.Rotate(new Vector3(0, -90, 0));
+            return;
+        }
     }
 
     private List<GridPosition> GetNeighbors(GridPosition position)
