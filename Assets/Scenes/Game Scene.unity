@@ -3311,7 +3311,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   platformTilePrefab: {fileID: 8860398654288276715, guid: 0b19fa4db2fab794abc6221428a5986e, type: 3}
   playerPrefab: {fileID: -6903248650847522876, guid: 8dadb6c0618e28f41b4a0b08ca5f030c, type: 3}
-  botPrefab: {fileID: -6903248650847522876, guid: 6f05757b22858b140bce2694ef56c271, type: 3}
+  botPrefab: {fileID: 4034052934465980917, guid: 84598e7373a03f74d87d5343c26071c6, type: 3}
   smokeParticlePrefab: {fileID: 6057624818127305800, guid: 42a649c5c26a37549b14cdfebe066acd, type: 3}
 --- !u!4 &1712838922
 Transform:

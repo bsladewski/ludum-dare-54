@@ -199,6 +199,21 @@ public class GameSystem : MonoBehaviour
     {
         ClearSelectionHints();
         moveStartTime = Time.time;
+
+        List<Player> players = platform.GetBots();
+        players.Add(platform.GetPlayer());
+        foreach (Player player in players)
+        {
+            if (!player.GetSelectedMove().HasValue)
+            {
+                continue;
+            }
+
+            Vector3 targetPosition = platform.GetWorldPositionFromGridPosition(player.GetSelectedMove().Value);
+            targetPosition += Vector3.up * player.GetOffsetY();
+            player.transform.LookAt(targetPosition);
+        }
+
         SetGameState(GameState.MoveExecution);
     }
 
@@ -335,6 +350,7 @@ public class GameSystem : MonoBehaviour
 
         foreach (Collision collision in collisionsToResolve)
         {
+            collision.player.PlayHitAnimation();
             collision.player.SetGridPosition(collision.gridPosition);
             collision.player.SetSelectedMove(collision.selectedMove);
         }
@@ -402,7 +418,7 @@ public class GameSystem : MonoBehaviour
                 int highscore = PlayerPrefs.GetInt("highscore");
 
                 string flavorText = string.Format("You won in {0} turns!", turnCounter);
-                if (turnCounter > highscore)
+                if (turnCounter < highscore)
                 {
                     PlayerPrefs.SetInt("highscore", turnCounter);
                     PlayerPrefs.Save();

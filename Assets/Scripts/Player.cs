@@ -3,6 +3,9 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     [SerializeField]
+    private Animator animator;
+
+    [SerializeField]
     private float offsetY = 0.5f;
 
     private GridPosition gridPosition;
@@ -13,7 +16,7 @@ public class Player : MonoBehaviour
 
     private float speed;
 
-    private float gravity = 2f;
+    private float gravity = 0.5f;
 
     private void Update()
     {
@@ -56,5 +59,11 @@ public class Player : MonoBehaviour
     public void SetIsEliminated()
     {
         isEliminated = true;
+        animator.SetTrigger("Eliminated");
+    }
+
+    public void PlayHitAnimation()
+    {
+        animator.SetTrigger("Hit");
     }
 }
