@@ -106,31 +106,31 @@ public class Platform : MonoBehaviour
         return IsTileAtGridPosition(player.GetGridPosition(), false);
     }
 
-    public List<GridPosition> GetPlayerMoves(Player player, bool includeUnstable = false)
+    public List<GridPosition> GetPlayerMoves(Player player, bool includeUnstable, bool includesOccupied)
     {
         List<GridPosition> playerMoves = new List<GridPosition>();
         GridPosition position = player.GetGridPosition();
 
         GridPosition positionN = new GridPosition(position.x, position.y + 1);
-        if (IsTileAtGridPosition(positionN, includeUnstable) && !IsPlayerAtGridPosition(positionN))
+        if (IsTileAtGridPosition(positionN, includeUnstable) && (includesOccupied || !IsPlayerAtGridPosition(positionN)))
         {
             playerMoves.Add(positionN);
         }
 
         GridPosition positionE = new GridPosition(position.x + 1, position.y);
-        if (IsTileAtGridPosition(positionE, includeUnstable) && !IsPlayerAtGridPosition(positionE))
+        if (IsTileAtGridPosition(positionE, includeUnstable) && (includesOccupied || !IsPlayerAtGridPosition(positionE)))
         {
             playerMoves.Add(positionE);
         }
 
         GridPosition positionS = new GridPosition(position.x, position.y - 1);
-        if (IsTileAtGridPosition(positionS, includeUnstable) && !IsPlayerAtGridPosition(positionS))
+        if (IsTileAtGridPosition(positionS, includeUnstable) && (includesOccupied || !IsPlayerAtGridPosition(positionS)))
         {
             playerMoves.Add(positionS);
         }
 
         GridPosition positionW = new GridPosition(position.x - 1, position.y);
-        if (IsTileAtGridPosition(positionW, includeUnstable) && !IsPlayerAtGridPosition(positionW))
+        if (IsTileAtGridPosition(positionW, includeUnstable) && (includesOccupied || !IsPlayerAtGridPosition(positionW)))
         {
             playerMoves.Add(positionW);
         }

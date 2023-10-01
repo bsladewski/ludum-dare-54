@@ -68,7 +68,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   meshRenderer: {fileID: 3622139448212232850}
-  selectedColor: {r: 0.021979094, g: 1, b: 0, a: 0.5019608}
+  selectedColor: {r: 0.021979094, g: 1, b: 0, a: 0.2509804}
 --- !u!1 &8175039852757189816
 GameObject:
   m_ObjectHideFlags: 0

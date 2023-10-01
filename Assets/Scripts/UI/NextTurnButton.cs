@@ -6,7 +6,7 @@ public class NextTurnButton : MonoBehaviour
     [SerializeField]
     private Button button;
 
-    private void Start()
+    private void Awake()
     {
         GameSystem.Instance.OnGameStateChanged += OnGameStateChanged;
     }

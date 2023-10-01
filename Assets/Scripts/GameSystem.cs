@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,6 +22,9 @@ public class GameSystem : MonoBehaviour
     [SerializeField]
     private float turnMoveTime = 1f;
 
+    [SerializeField]
+    private GameOverMenu gameOverMenu;
+
     public event EventHandler<GameState> OnGameStateChanged;
 
     private HashSet<SelectionHint> selectionHints;
@@ -29,9 +33,27 @@ public class GameSystem : MonoBehaviour
 
     private float moveStartTime;
 
-    private List<Player> collisionsToResolve;
-
     private float collisionStartTime;
+
+    private struct Collision
+    {
+        public Player player;
+
+        public GridPosition gridPosition;
+
+        public GridPosition selectedMove;
+
+        public Collision(Player player, GridPosition gridPosition, GridPosition selectedMove)
+        {
+            this.player = player;
+            this.gridPosition = gridPosition;
+            this.selectedMove = selectedMove;
+        }
+    }
+
+    private List<Collision> collisionsToResolve;
+
+    private bool gameOver;
 
     private void Awake()
     {
@@ -42,7 +64,7 @@ public class GameSystem : MonoBehaviour
         Instance = this;
         gameState = GameState.TurnInit;
         selectionHints = new HashSet<SelectionHint>();
-        collisionsToResolve = new List<Player>();
+        collisionsToResolve = new List<Collision>();
     }
 
     private void Start()
@@ -52,6 +74,11 @@ public class GameSystem : MonoBehaviour
 
     private void Update()
     {
+        if (gameOver)
+        {
+            return;
+        }
+
         if (gameState == GameState.MoveSelection)
         {
             if (Input.GetMouseButtonDown(0))
@@ -112,12 +139,12 @@ public class GameSystem : MonoBehaviour
                 AdvanceState();
             }
 
-            foreach (Player player in collisionsToResolve)
+            foreach (Collision collision in collisionsToResolve)
             {
-                MovePlayer(player);
+                MovePlayer(collision.player);
             }
 
-            if (Time.time - moveStartTime >= 1f)
+            if (Time.time - collisionStartTime >= 1f)
             {
                 CalculateCollisionResolutions();
                 collisionStartTime = Time.time;
@@ -181,8 +208,6 @@ public class GameSystem : MonoBehaviour
         }
 
         EndTurn();
-        SetGameState(GameState.TurnInit);
-        AdvanceState(); // barf
     }
 
     private void ClearSelectionHints()
@@ -200,12 +225,12 @@ public class GameSystem : MonoBehaviour
         List<Player> bots = platform.GetBots();
         foreach (Player bot in bots)
         {
-            List<GridPosition> moves = platform.GetPlayerMoves(bot);
+            List<GridPosition> moves = platform.GetPlayerMoves(bot, false, false);
             if (platform.IsTileUnstable(bot.GetGridPosition()) && (moves == null || moves.Count == 0))
             {
                 // if the bot is on an unstable tile they should always move, even onto another
                 // unstable tile, for the drama
-                moves = platform.GetPlayerMoves(bot, true);
+                moves = platform.GetPlayerMoves(bot, true, false);
             }
 
             if (moves == null || moves.Count == 0)
@@ -224,7 +249,7 @@ public class GameSystem : MonoBehaviour
     {
         ClearSelectionHints();
         Player player = platform.GetPlayer();
-        List<GridPosition> moves = platform.GetPlayerMoves(player, true);
+        List<GridPosition> moves = platform.GetPlayerMoves(player, true, true);
         foreach (GridPosition move in moves)
         {
             Vector3 moveWorldPosition = platform.GetWorldPositionFromGridPosition(move);
@@ -251,7 +276,58 @@ public class GameSystem : MonoBehaviour
     {
         collisionsToResolve.Clear();
 
-        // TODO: find collisions and update selected move to resolve collisions (use map so each player only collides with a single other player)
+        HashSet<Player> used = new HashSet<Player>();
+        List<Player> players = platform.GetBots();
+        players.Add(platform.GetPlayer());
+        foreach (Player p1 in players)
+        {
+            foreach (Player p2 in players)
+            {
+                if (p1 == p2 || used.Contains(p2))
+                {
+                    continue;
+                }
+
+                GridPosition? p1Move = p1.GetSelectedMove();
+                GridPosition? p2Move = p2.GetSelectedMove();
+
+                GridPosition p1Pos = p1Move.HasValue ? p1Move.Value : p1.GetGridPosition();
+                GridPosition p2Pos = p2Move.HasValue ? p2Move.Value : p2.GetGridPosition();
+                GridPosition p2PrevPos = p2.GetGridPosition();
+
+                if (!p1Pos.Equals(p2Pos) || !p2Move.HasValue)
+                {
+                    continue;
+                }
+
+                if (p2Pos.x > p2PrevPos.x) // N
+                {
+                    collisionsToResolve.Add(new Collision(p1, p1Pos, new GridPosition(p1Pos.x + 1, p1Pos.y)));
+                    used.Add(p2);
+                }
+                else if (p2Pos.x < p2PrevPos.x) // S
+                {
+                    collisionsToResolve.Add(new Collision(p1, p1Pos, new GridPosition(p1Pos.x - 1, p1Pos.y)));
+                    used.Add(p2);
+                }
+                else if (p2Pos.y > p2PrevPos.y) // E
+                {
+                    collisionsToResolve.Add(new Collision(p1, p1Pos, new GridPosition(p1Pos.x, p1Pos.y + 1)));
+                    used.Add(p2);
+                }
+                else if (p2Pos.y < p2PrevPos.y) // W
+                {
+                    collisionsToResolve.Add(new Collision(p1, p1Pos, new GridPosition(p1Pos.x, p1Pos.y - 1)));
+                    used.Add(p2);
+                }
+            }
+        }
+
+        foreach (Collision collision in collisionsToResolve)
+        {
+            collision.player.SetGridPosition(collision.gridPosition);
+            collision.player.SetSelectedMove(collision.selectedMove);
+        }
     }
 
     private void UpdatePlayerPosition(Player player)
@@ -268,12 +344,14 @@ public class GameSystem : MonoBehaviour
 
     private void EndTurn()
     {
+        bool playerEliminated = false;
+
         platform.DestroyUnstableTiles();
         Player player = platform.GetPlayer();
         if (!platform.ValidatePlayerPosition(player))
         {
             platform.EliminatePlayer(player);
-            // TODO: end game state, player loses
+            playerEliminated = true;
         }
 
         foreach (Player bot in platform.GetBots())
@@ -283,5 +361,25 @@ public class GameSystem : MonoBehaviour
                 platform.EliminatePlayer(bot);
             }
         }
+
+        if (playerEliminated || platform.GetBots().Count == 0)
+        {
+            if (!playerEliminated)
+            {
+                gameOverMenu.SetTitleText("You Won!");
+            }
+            StartCoroutine(ShowGameOverMenu(2));
+            gameOver = true;
+            return;
+        }
+
+        SetGameState(GameState.TurnInit);
+        AdvanceState();
+    }
+
+    private IEnumerator ShowGameOverMenu(int delaySeconds)
+    {
+        yield return new WaitForSeconds(delaySeconds);
+        gameOverMenu.Show();
     }
 }
