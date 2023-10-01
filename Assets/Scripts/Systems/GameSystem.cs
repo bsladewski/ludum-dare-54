@@ -423,7 +423,7 @@ public class GameSystem : MonoBehaviour
                 int highscore = PlayerPrefs.GetInt("highscore");
 
                 string flavorText = string.Format("You won in {0} turns!", turnCounter);
-                if (highscore > 0 && turnCounter < highscore)
+                if (highscore == 0 && turnCounter < highscore)
                 {
                     PlayerPrefs.SetInt("highscore", turnCounter);
                     PlayerPrefs.Save();
