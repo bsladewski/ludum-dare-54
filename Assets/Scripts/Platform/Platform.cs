@@ -17,6 +17,9 @@ public class Platform : MonoBehaviour
     [SerializeField]
     private Player botPrefab;
 
+    [SerializeField]
+    private SmokeParticle smokeParticlePrefab;
+
     private PlatformTile[,] platformTiles;
 
     private List<GridPosition> playerSpawnPositions;
@@ -109,30 +112,14 @@ public class Platform : MonoBehaviour
     public List<GridPosition> GetPlayerMoves(Player player, bool includeUnstable, bool includesOccupied)
     {
         List<GridPosition> playerMoves = new List<GridPosition>();
-        GridPosition position = player.GetGridPosition();
+        List<GridPosition> neighbors = GetNeighbors(player.GetGridPosition());
 
-        GridPosition positionN = new GridPosition(position.x, position.y + 1);
-        if (IsTileAtGridPosition(positionN, includeUnstable) && (includesOccupied || !IsPlayerAtGridPosition(positionN)))
+        foreach (GridPosition gridPosition in neighbors)
         {
-            playerMoves.Add(positionN);
-        }
-
-        GridPosition positionE = new GridPosition(position.x + 1, position.y);
-        if (IsTileAtGridPosition(positionE, includeUnstable) && (includesOccupied || !IsPlayerAtGridPosition(positionE)))
-        {
-            playerMoves.Add(positionE);
-        }
-
-        GridPosition positionS = new GridPosition(position.x, position.y - 1);
-        if (IsTileAtGridPosition(positionS, includeUnstable) && (includesOccupied || !IsPlayerAtGridPosition(positionS)))
-        {
-            playerMoves.Add(positionS);
-        }
-
-        GridPosition positionW = new GridPosition(position.x - 1, position.y);
-        if (IsTileAtGridPosition(positionW, includeUnstable) && (includesOccupied || !IsPlayerAtGridPosition(positionW)))
-        {
-            playerMoves.Add(positionW);
+            if (IsTileAtGridPosition(gridPosition, includeUnstable) && (includesOccupied || !IsPlayerAtGridPosition(gridPosition)))
+            {
+                playerMoves.Add(gridPosition);
+            }
         }
 
         return playerMoves;
@@ -177,7 +164,7 @@ public class Platform : MonoBehaviour
     {
         foreach (PlatformTile tile in unstablePlatformTiles)
         {
-            // TODO: PlatformTile function to destroy and spawn particles
+            Instantiate(smokeParticlePrefab, tile.transform.position, Quaternion.identity);
             Destroy(tile.gameObject);
         }
 
@@ -211,6 +198,16 @@ public class Platform : MonoBehaviour
         GridPosition spawnPosition = playerSpawnPositions[spawnPositionIndex];
         playerSpawnPositions.RemoveAt(spawnPositionIndex);
         return spawnPosition;
+    }
+
+    private List<GridPosition> GetNeighbors(GridPosition position)
+    {
+        return new List<GridPosition>() {
+            new GridPosition(position.x, position.y + 1),
+            new GridPosition(position.x, position.y - 1),
+            new GridPosition(position.x + 1, position.y),
+            new GridPosition(position.x - 1, position.y)
+        };
     }
 
     private bool IsTileAtGridPosition(GridPosition gridPosition, bool includeUnstable)

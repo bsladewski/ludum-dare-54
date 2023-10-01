@@ -587,6 +587,7 @@ GameObject:
   - component: {fileID: 315811192}
   - component: {fileID: 315811191}
   - component: {fileID: 315811190}
+  - component: {fileID: 315811193}
   m_Layer: 0
   m_Name: cm
   m_TagString: Untagged
@@ -670,6 +671,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0b09e7857660247b1477e93731de29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &315811193
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 315811188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68bb026fafb42b14791938953eaace77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_NoiseProfile: {fileID: 11400000, guid: 69ce8388f6785dd4c8c39915efece2f4, type: 2}
+  m_PivotOffset: {x: 0, y: 0, z: 0}
+  m_AmplitudeGain: 0
+  m_FrequencyGain: 1
+  mNoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!1 &428652349
 GameObject:
   m_ObjectHideFlags: 0
@@ -3294,6 +3312,7 @@ MonoBehaviour:
   platformTilePrefab: {fileID: 8860398654288276715, guid: 0b19fa4db2fab794abc6221428a5986e, type: 3}
   playerPrefab: {fileID: -6903248650847522876, guid: 8dadb6c0618e28f41b4a0b08ca5f030c, type: 3}
   botPrefab: {fileID: -6903248650847522876, guid: 6f05757b22858b140bce2694ef56c271, type: 3}
+  smokeParticlePrefab: {fileID: 6057624818127305800, guid: 42a649c5c26a37549b14cdfebe066acd, type: 3}
 --- !u!4 &1712838922
 Transform:
   m_ObjectHideFlags: 0
@@ -3353,6 +3372,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6a628ad2ac4a514cb94c4bc8165f854, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  virtualCamera: {fileID: 1466048314}
   moveSpeed: 3
 --- !u!1 &1753448060
 GameObject:
